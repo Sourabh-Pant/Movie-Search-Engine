@@ -53,8 +53,8 @@ export const login = async (req, res) => {
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: false, // Set to true in production (HTTPS)
-        sameSite: "Lax",
+        secure: true, // ✅ Use true in production with HTTPS
+        sameSite: "None", // ✅ Required for cross-site cookies
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
       .status(200)
@@ -72,20 +72,19 @@ export const login = async (req, res) => {
 // ✅ Logout Controller
 export const logout = (req, res) => {
   res
-    .clearCookie("token")
+    .clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    })
     .status(200)
     .json({ message: "Logged out successfully" });
 };
 
-// ✅ Get current user for persistent login
+// ✅ Get current user (called only after verifyToken middleware)
 export const getCurrentUser = async (req, res) => {
   try {
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Not logged in" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select("-password");
-
+    const user = await User.findById(req.user.id).select("-password");
     if (!user) return res.status(401).json({ message: "User not found" });
 
     res.status(200).json({
