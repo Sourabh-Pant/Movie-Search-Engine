@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 const port=process.env.PORT || 4000; 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'https://movie-search-engine-1.onrender.com',
   credentials: true
 }));
 app.use(express.json());
